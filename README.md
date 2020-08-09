@@ -31,7 +31,8 @@ Expo it's almost a React Native superset, helps us to build React Natives quickl
 ### Why Express?
 Express it's a Fast, unopinionated, minimalist web framework for Node.js. It's has a great community support and fills perfect for build REST APIs.
 
-### WHY SCSS instead of CSS?
+WHY SCSS instead of CSS?
+
 Both solutions are great, SCSS helps us to build more productivity and component based stylesheets for your apps without needing to use alternatives like Styled-Components.
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -103,8 +104,14 @@ Emulator IOS, Android or your mobile with Expo client install with the QR Code
 
 # Installations
 
-Tab Navigation, Bottom Tabs (navigation)
-Google Fonts
+Tab and Stack  Navigation , Bottom Tabs (below)
+
+yarn add @react-navigation/native
+expo install react-native-gesture-handler react-native-reanimated react-native-screens react-native-safe-area-context @react-native-community/masked-view
+yarn add @react-navigation/stack
+npm install @react-navigation/bottom-tabs
+
+Google Fonts (Archivo and Poppins)
 Axios
 Async Storage
 
