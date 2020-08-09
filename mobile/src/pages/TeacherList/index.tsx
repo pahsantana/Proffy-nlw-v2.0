@@ -1,23 +1,52 @@
-import React, { useState, FormEvent } from 'react';
+import React, { useState } from 'react';
+import {View,ScrollView,Text,TextInput} from 'react-native';
+import { BorderlessButton, RectButton } from 'react-native-gesture-handler';
+import {Feather} from '@expo/vector-icons';
+import AsyncStorage from '@react-native-community/async-storage';
 
 import PageHeader from '../../components/PageHeader';
-import TeacherItem, {Teacher} from '../../components/TeacherItem';
-import Input from '../../components/Input';
-import Select from '../../components/Select';
+import TeacherItem, { Teacher } from '../../components/TeacherItem';
 
 import api from '../../services/api';
 
-import './styles.css';
-
+import styles from './styles';
+import { useFocusEffect } from '@react-navigation/native';
 
 function TeacherList(){
     const [teachers,setTeachers]=useState([]);
+    const [favorites,setFavorites]=useState<number[]>([]);
+    const [isFiltersVisible,setIsFiltersVisible]= useState(false);
+    
     const [subject,setSubject] = useState('');
     const [week_day,setWeekDay] = useState('');
-    const [time,setTime] = useState('');
-    
-    async function searchTeachers(e:FormEvent){
-        e.preventDefault();
+    const [time,setTime]=useState('');
+
+    function loadFavorites(){
+        AsyncStorage.getItem('favorites').then(response=>{
+            //Dados em texto JSON converter texto->array
+            if (response) {
+                const favoritedTeachers = JSON.parse(response);
+                const favoritedTeachersIds = favoritedTeachers.map((teacher:Teacher)=>{
+                    return teacher.id;
+                })
+
+                setFavorites(favoritedTeachersIds);
+            }
+        });
+    }
+
+    useFocusEffect(
+        React.useCallback(() => {
+          loadFavorites();
+        }, [])
+    )
+
+    function handleToggleFiltersVisible(){
+        setIsFiltersVisible(!isFiltersVisible);
+    }
+
+    async function handleFiltersSubmit(){
+        loadFavorites();
         const response = await api.get('classes',{
             params:{
                 subject,
@@ -25,69 +54,77 @@ function TeacherList(){
                 time,
             }
         });
+        setIsFiltersVisible(false);
         setTeachers(response.data);
     }
-
+    
     return (
-        <div id="page-teacher-list" className="container">
-            <PageHeader title="Estes são os proffys disponíveis.">
-                <form id="search-teachers" onSubmit={searchTeachers}>
-                    <Select
-                        name="subject" 
-                        label="Matéria"
-                        value={subject}
-                        onChange={(e)=>{setSubject(e.target.value)}}
-                        options={[
-                            {value: 'Artes', label:'Artes'},
-                            {value: 'Biologia', label:'Biologia'},
-                            {value: 'Ciências', label:'Ciências'},
-                            {value: 'Educação física', label:'Educação física'},
-                            {value: 'Física', label:'Física'},
-                            {value: 'Geografia', label:'Geografia'},
-                            {value: 'História', label:'História'},
-                            {value: 'Matemática', label:'Matemática'},
-                            {value: 'Português', label:'Português'},
-                            {value: 'Química', label:'Química'},
-                            {value: 'Filosofia', label:'Filosofia'},
-                            {value: 'Sociologia', label:'Sociologia'},
-                            {value: 'Inglês', label:'Inglês'},
-                            {value: 'Programação', label:'Programação'},
-                        ]}
-                    />
-                    <Select
-                        name="week_day" 
-                        label="Dia da semana"
-                        value={week_day}
-                        onChange={(e)=>{setWeekDay(e.target.value)}}
-                        options={[
-                            {value: '0', label:'Domingo'},
-                            {value: '1', label:'Segunda-feira'},
-                            {value: '2', label:'Terça-feira'},
-                            {value: '3', label:'Quarta-feira'},
-                            {value: '4', label:'Quinta-feira'},
-                            {value: '5', label:'Sexta-feira'},
-                            {value: '6', label:'Sábado'},
-                        ]}
-                    />
-                    <Input 
-                        type="time" 
-                        name="time" 
-                        label="Hora"
-                        value={time}
-                        onChange={(e)=>{setTime(e.target.value)}}
-                    />
-                    <button type="submit">
-                        Buscar
-                    </button>
-                </form>
+        <View style={styles.container}>
+            <PageHeader 
+                title="Proffys disponíveis" 
+                headerRight={(
+                    <BorderlessButton onPress={handleToggleFiltersVisible}>
+                        <Feather name="filter" size={20} color="#FFF"/>
+                    </BorderlessButton>
+                )}
+            >
+                {isFiltersVisible && (
+                    <View style={styles.searchForm}>
+                        <Text style={styles.label}>Matéria</Text>
+                        <TextInput
+                            style={styles.input}
+                            value={subject}
+                            onChangeText={text=>setSubject(text)}
+                            placeholder="Qual a matéria?"
+                            placeholderTextColor='#c1bccc'
+                        />
+                        <View style={styles.inputGroup}>
+                            <View style={styles.inputBlock}>
+                                <Text style={styles.label}>Dia da semana</Text>
+                                <TextInput
+                                    style={styles.input}
+                                    value={week_day}
+                                    onChangeText={text=>setWeekDay(text)}
+                                    placeholder="Qual o dia?"
+                                    placeholderTextColor='#c1bccc'
+                                />
+                            </View>
+                            <View style={styles.inputBlock}>
+                                <Text style={styles.label}>Horário</Text>
+                                <TextInput
+                                    style={styles.input}
+                                    value={time}
+                                    onChangeText={text=>setTime(text)}
+                                    placeholder="Qual horário?"
+                                    placeholderTextColor='#c1bccc'
+                                />
+                            </View>
+                        </View>
+                        <RectButton onPress={handleFiltersSubmit} style={styles.submitButton}>
+                            <Text style={styles.submitButtonText}>Filtrar</Text>
+                        </RectButton>
+                    </View>
+                )}
             </PageHeader>
-            <main>
-                {teachers.map((teacher:Teacher)=>{
-                    return <TeacherItem key={teacher.id} teacher={teacher}/>;
+            <ScrollView
+                style={styles.teacherList}
+                contentContainerStyle={{
+                    paddingHorizontal:16,
+                    paddingBottom:16,
+                }}
+            >
+                {teachers.map((teacher:Teacher) => {
+                    return (
+                        <TeacherItem 
+                            key={teacher.id} 
+                            teacher={teacher}
+                            favorited={favorites.includes(teacher.id)}
+                        />)
                 })}
-            </main>
-        </div>
-    )
+            </ScrollView>
+           
+        </View>
+    );
 }
 
 export default TeacherList;
