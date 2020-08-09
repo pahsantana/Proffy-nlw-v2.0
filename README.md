@@ -1,5 +1,5 @@
 # Proffy-nlw-v2.0
-Um site e um aplicativo mobile que conectam professores e alunos durante a pandemia de COVID-19 oferecido pela Rocketseat na Next Level Week 2.0. - Usando Typescript, ReactJS, React Native, Expo, Axios, Knex, SQLite e Express.
+Um site e um aplicativo mobile que conectam professores e alunos durante a pandemia de COVID-19 oferecido pela Rocketseat na Next Level Week 2.0. - Usando Typescript, ReactJS, React Native, Expo, Axios, Knex, SQLite 3, Node JS, SCSS e Express.
 
 ### PROFFY 
 
